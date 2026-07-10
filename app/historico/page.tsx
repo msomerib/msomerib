@@ -9,10 +9,10 @@ export default async function HistoricoPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login");
 
-  const currentDay = getCurrentDayNumber(getPlanStartDate());
-  const users = listUsers();
+  const currentDay = getCurrentDayNumber(await getPlanStartDate());
+  const users = await listUsers();
   const plan = generatePlan().filter((d) => d.day <= currentDay);
-  const allConfirmations = getAllConfirmations();
+  const allConfirmations = await getAllConfirmations();
 
   const confirmedByDay = new Map<number, Set<number>>();
   for (const c of allConfirmations) {

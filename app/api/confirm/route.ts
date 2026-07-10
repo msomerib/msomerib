@@ -14,15 +14,15 @@ export async function POST(req: NextRequest) {
   const day = Number(body?.day);
   const action = body?.action === "unconfirm" ? "unconfirm" : "confirm";
 
-  const currentDay = getCurrentDayNumber(getPlanStartDate());
+  const currentDay = getCurrentDayNumber(await getPlanStartDate());
   if (!Number.isInteger(day) || day < 1 || day > Math.min(currentDay, PLAN_TOTAL_DAYS)) {
     return NextResponse.json({ error: "Dia inválido." }, { status: 400 });
   }
 
   if (action === "confirm") {
-    confirmReading(user.id, day);
+    await confirmReading(user.id, day);
   } else {
-    unconfirmReading(user.id, day);
+    await unconfirmReading(user.id, day);
   }
 
   return NextResponse.json({ ok: true });

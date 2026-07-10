@@ -45,9 +45,16 @@ Alterar o nome de uma pessoa em `MEMBER*_NAME` depois que o app já rodou cria u
 
 ## Dados e persistência
 
-O app usa SQLite (`better-sqlite3`), com o arquivo do banco em `data/app.db` (criado
-automaticamente na primeira execução, e ignorado pelo git — não é parte do código-fonte).
-Esse arquivo guarda os 3 usuários (nome + PIN com hash), as confirmações de leitura de cada dia,
+O app usa um banco SQLite via [`@libsql/client`](https://github.com/tursodatabase/libsql-client-ts),
+o que permite dois modos, escolhidos automaticamente pela variável `TURSO_DATABASE_URL`:
+
+- **Sem `TURSO_DATABASE_URL` definida** (uso local/dev): grava num arquivo comum em
+  `data/app.db`, criado automaticamente e ignorado pelo git.
+- **Com `TURSO_DATABASE_URL` definida** (produção): grava num banco [Turso](https://turso.tech)
+  gratuito na nuvem — necessário para rodar em uma hospedagem "serverless" como a Vercel, cujo
+  sistema de arquivos não é persistente entre requisições.
+
+Esse banco guarda os 3 usuários (nome + PIN com hash), as confirmações de leitura de cada dia,
 e a data de início do plano.
 
 Os textos dos devocionais ficam em `data/devotionals/*.json` e fazem parte do repositório
@@ -55,22 +62,21 @@ Os textos dos devocionais ficam em `data/devotionals/*.json` e fazem parte do re
 
 ## Implantação (deploy)
 
-Como o app grava em um arquivo SQLite local, ele precisa rodar em um servidor com sistema de
-arquivos persistente entre as requisições — por exemplo Railway, Render, Fly.io ou uma VPS
-comum, com:
+A forma recomendada é **Vercel** (hospeda o site, plano gratuito "Hobby") + **Turso**
+(banco de dados gratuito). Ambos têm planos gratuitos permanentes, sem cartão de crédito.
 
-```bash
-npm run build
-npm start
-```
+1. Crie um banco gratuito no [Turso](https://turso.tech) e copie a URL do banco e o token de
+   acesso.
+2. Importe este repositório na [Vercel](https://vercel.com) (New Project → importe do GitHub).
+3. Nas configurações do projeto na Vercel, adicione as variáveis de ambiente de `.env.example`:
+   `MEMBER1_NAME`, `MEMBER1_PIN`, `MEMBER2_NAME`, `MEMBER2_PIN`, `MEMBER3_NAME`, `MEMBER3_PIN`,
+   `PLAN_START_DATE`, `SESSION_SECRET`, `TURSO_DATABASE_URL` e `TURSO_AUTH_TOKEN`.
+4. Clique em Deploy. A Vercel roda `npm run build` e publica o site com um link `.vercel.app`.
 
-Isso **não** funciona bem em uma função serverless "pura" (como o runtime padrão da Vercel),
-porque o sistema de arquivos não é garantido como persistente entre invocações. Se quiser usar
-a Vercel, será necessário trocar o SQLite por um banco externo (ex. Postgres) — isso não está
-implementado aqui.
-
-Lembre-se de configurar as variáveis de ambiente (nomes/PINs reais e `SESSION_SECRET`) no
-serviço de hospedagem antes de compartilhar o link com o grupo.
+Alternativa: como o app também sabe gravar num arquivo SQLite comum, também dá para rodar em
+qualquer servidor com disco persistente (Railway, Render, Fly.io, uma VPS) com
+`npm run build && npm start`, sem precisar do Turso — nesse caso simplesmente não defina
+`TURSO_DATABASE_URL`.
 
 ## Estrutura do código
 

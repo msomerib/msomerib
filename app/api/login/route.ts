@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   const name = typeof body?.name === "string" ? body.name : "";
   const pin = typeof body?.pin === "string" ? body.pin : "";
 
-  const user = findUserByName(name);
+  const user = await findUserByName(name);
   if (!user || !verifyPin(user, pin)) {
     return NextResponse.json({ error: "Nome ou PIN incorretos." }, { status: 401 });
   }

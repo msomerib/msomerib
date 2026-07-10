@@ -17,11 +17,11 @@ export default async function DayPage({ params }: { params: Promise<{ day: strin
   const day = Number(dayParam);
   if (!Number.isInteger(day) || day < 1 || day > PLAN_TOTAL_DAYS) notFound();
 
-  const currentDay = getCurrentDayNumber(getPlanStartDate());
+  const currentDay = getCurrentDayNumber(await getPlanStartDate());
   const reading = getDayReading(day);
   const devotional = getDevotional(day);
-  const users = listUsers();
-  const confirmations = getConfirmationsForDay(day);
+  const users = await listUsers();
+  const confirmations = await getConfirmationsForDay(day);
   const confirmedIds = new Set(confirmations.map((c) => c.user_id));
 
   const members = users.map((u) => ({

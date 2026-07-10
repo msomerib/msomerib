@@ -13,11 +13,11 @@ export default async function Home() {
   const user = await getSessionUser();
   if (!user) redirect("/login");
 
-  const day = getCurrentDayNumber(getPlanStartDate());
+  const day = getCurrentDayNumber(await getPlanStartDate());
   const reading = getDayReading(day);
   const devotional = getDevotional(day);
-  const users = listUsers();
-  const confirmations = getConfirmationsForDay(day);
+  const users = await listUsers();
+  const confirmations = await getConfirmationsForDay(day);
   const confirmedIds = new Set(confirmations.map((c) => c.user_id));
 
   const members = users.map((u) => ({

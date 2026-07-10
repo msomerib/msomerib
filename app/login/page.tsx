@@ -7,7 +7,7 @@ export default async function LoginPage() {
   const user = await getSessionUser();
   if (user) redirect("/");
 
-  const names = listUsers().map((u) => u.name);
+  const names = (await listUsers()).map((u) => u.name);
 
   return (
     <div className="flex flex-col items-center justify-center flex-1 py-12">
