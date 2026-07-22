@@ -11,8 +11,11 @@
 
   <header class="topbar">
     <div class="brand">
-      <h1>Monitor de ARTs</h1>
-      <p class="subtitle">Acompanhamento de vencimentos e emiss&atilde;o de relat&oacute;rios</p>
+      <span class="brand-icon" aria-hidden="true">&#128203;</span>
+      <div>
+        <h1>Monitor de ARTs</h1>
+        <p class="subtitle">Acompanhamento de vencimentos e emiss&atilde;o de relat&oacute;rios</p>
+      </div>
     </div>
     <div class="topbar-actions">
       <button id="btn-new" class="btn btn-primary">+ Nova ART</button>
@@ -27,18 +30,22 @@
 
   <section class="summary-cards">
     <div class="card card-total">
+      <span class="card-icon" aria-hidden="true">&#128196;</span>
       <span class="card-value" id="stat-total">0</span>
       <span class="card-label">Total de ARTs</span>
     </div>
     <div class="card card-ok">
+      <span class="card-icon" aria-hidden="true">&#9989;</span>
       <span class="card-value" id="stat-ok">0</span>
       <span class="card-label">V&aacute;lidas</span>
     </div>
     <div class="card card-soon">
+      <span class="card-icon" aria-hidden="true">&#8987;</span>
       <span class="card-value" id="stat-soon">0</span>
       <span class="card-label">Vencendo em at&eacute; 10 dias</span>
     </div>
     <div class="card card-expired">
+      <span class="card-icon" aria-hidden="true">&#128308;</span>
       <span class="card-value" id="stat-expired">0</span>
       <span class="card-label">Vencidas</span>
     </div>
@@ -63,11 +70,12 @@
     <table id="arts-table">
       <thead>
         <tr>
-          <th data-sort="fim">Vencimento &#8597;</th>
           <th data-sort="art">ART</th>
           <th data-sort="nome">Cliente</th>
           <th data-sort="cnpj">CNPJ</th>
           <th>Endere&ccedil;o</th>
+          <th data-sort="inicio">In&iacute;cio &#8597;</th>
+          <th data-sort="fim">Vencimento &#8597;</th>
           <th data-sort="valor">Valor</th>
           <th>Status</th>
           <th class="no-print">A&ccedil;&otilde;es</th>

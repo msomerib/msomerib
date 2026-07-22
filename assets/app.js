@@ -192,11 +192,12 @@
       }
 
       tr.innerHTML =
-        "<td>" + formatDateBR(art.fim) + dueNote + "</td>" +
         "<td>" + escapeHtml(art.art) + "</td>" +
         "<td>" + escapeHtml(art.nome) + "</td>" +
         "<td>" + escapeHtml(art.cnpj) + "</td>" +
         "<td>" + escapeHtml(art.endereco) + (art.bairroCidadeCep ? "<br><span style='color:var(--muted)'>" + escapeHtml(art.bairroCidadeCep) + "</span>" : "") + "</td>" +
+        "<td>" + formatDateBR(art.inicio) + "</td>" +
+        "<td>" + formatDateBR(art.fim) + dueNote + "</td>" +
         "<td>" + formatCurrency(art.valor) + "</td>" +
         "<td><span class='status-pill status-" + status + "'>" + STATUS_LABEL[status] + "</span></td>" +
         "<td class='no-print'><div class='row-actions'>" +
