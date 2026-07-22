@@ -3,6 +3,7 @@
 
   var STORAGE_KEY = "monitor-arts-data-v1";
   var WARNING_DAYS = 10;
+  var POLL_INTERVAL_MS = 8000;
 
   var state = {
     arts: [],
@@ -10,9 +11,10 @@
     statusFilter: "todos",
     sortKey: "fim",
     sortDir: "asc",
+    lastKnownUpdatedAt: 0,
   };
 
-  // ---------- persistence ----------
+  // ---------- persistence (local cache) ----------
 
   function loadArts() {
     var raw = localStorage.getItem(STORAGE_KEY);
@@ -26,9 +28,129 @@
     return (window.SEED_ARTS || []).slice();
   }
 
-  function saveArts() {
+  function saveArtsLocalOnly() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.arts));
   }
+
+  function saveArts() {
+    saveArtsLocalOnly();
+    remote.push();
+  }
+
+  // ---------- shared sync (Firebase Realtime Database REST API) ----------
+
+  var remote = (function () {
+    var configured = !!(window.FIREBASE_DB_URL && window.FIREBASE_DB_URL.trim());
+    var pollTimer = null;
+
+    function url() {
+      var base = window.FIREBASE_DB_URL.replace(/\/$/, "");
+      var path = encodeURIComponent(window.FIREBASE_SHARED_PATH || "monitor-arts");
+      return base + "/" + path + ".json";
+    }
+
+    function artsToRemoteObject(arr) {
+      var obj = {};
+      arr.forEach(function (art) {
+        obj[art.id] = art;
+      });
+      return obj;
+    }
+
+    function remoteObjectToArts(obj) {
+      if (!obj) return [];
+      return Object.keys(obj).map(function (k) { return obj[k]; });
+    }
+
+    function setStatus(kind, message) {
+      var el = document.getElementById("sync-status");
+      var bar = document.getElementById("sync-bar");
+      if (!el || !bar) return;
+      bar.hidden = false;
+      el.className = "sync-status" + (kind ? " is-" + kind : "");
+      el.innerHTML = "<span class='dot'></span>" + escapeHtml(message);
+    }
+
+    function fetchOnce() {
+      return fetch(url(), { cache: "no-store" }).then(function (res) {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
+      });
+    }
+
+    function push() {
+      if (!configured) return;
+      var payload = {
+        updatedAt: Date.now(),
+        arts: artsToRemoteObject(state.arts),
+      };
+      setStatus("syncing", "Sincronizando...");
+      fetch(url(), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          state.lastKnownUpdatedAt = payload.updatedAt;
+          setStatus("synced", "Sincronizado às " + new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }));
+        })
+        .catch(function (err) {
+          console.error("Falha ao sincronizar", err);
+          setStatus("error", "Sem conexão — mudanças salvas só neste aparelho");
+        });
+    }
+
+    function poll() {
+      if (!configured) return;
+      fetchOnce()
+        .then(function (data) {
+          if (data && data.updatedAt && data.updatedAt > state.lastKnownUpdatedAt) {
+            state.arts = remoteObjectToArts(data.arts);
+            state.lastKnownUpdatedAt = data.updatedAt;
+            saveArtsLocalOnly();
+            renderAll();
+          }
+          setStatus("synced", "Sincronizado às " + new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }));
+        })
+        .catch(function (err) {
+          console.error("Falha ao buscar dados compartilhados", err);
+          setStatus("error", "Sem conexão — mostrando últimos dados salvos");
+        });
+    }
+
+    function init() {
+      if (!configured) return;
+      document.getElementById("sync-bar").hidden = false;
+      setStatus("syncing", "Conectando...");
+
+      fetchOnce()
+        .then(function (data) {
+          if (data && data.arts) {
+            state.arts = remoteObjectToArts(data.arts);
+            state.lastKnownUpdatedAt = data.updatedAt || Date.now();
+            saveArtsLocalOnly();
+            renderAll();
+            setStatus("synced", "Sincronizado às " + new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }));
+          } else {
+            // Primeira vez: inicializa o banco compartilhado com os dados locais atuais.
+            push();
+          }
+        })
+        .catch(function (err) {
+          console.error("Falha ao conectar ao banco compartilhado", err);
+          setStatus("error", "Sem conexão — mostrando últimos dados salvos neste aparelho");
+        });
+
+      pollTimer = setInterval(poll, POLL_INTERVAL_MS);
+      window.addEventListener("focus", poll);
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) poll();
+      });
+    }
+
+    return { init: init, push: push, poll: poll, isConfigured: function () { return configured; } };
+  })();
 
   // ---------- date / status helpers ----------
 
@@ -489,6 +611,9 @@
     document.getElementById("alert-dismiss").addEventListener("click", function () {
       document.getElementById("alert-banner").hidden = true;
     });
+
+    var syncBtn = document.getElementById("btn-sync-now");
+    if (syncBtn) syncBtn.addEventListener("click", function () { remote.poll(); });
   }
 
   // ---------- init ----------
@@ -497,6 +622,7 @@
     state.arts = loadArts();
     attachEvents();
     renderAll();
+    remote.init();
   }
 
   document.addEventListener("DOMContentLoaded", init);

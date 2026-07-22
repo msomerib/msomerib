@@ -22,6 +22,11 @@
     </div>
   </header>
 
+  <div id="sync-bar" class="sync-bar no-print" hidden>
+    <span id="sync-status" class="sync-status"></span>
+    <button id="btn-sync-now" class="sync-refresh" title="Buscar atualiza&ccedil;&otilde;es agora">&#8635; Atualizar agora</button>
+  </div>
+
   <section id="alert-banner" class="alert-banner" hidden>
     <span id="alert-icon" class="alert-icon">&#9888;</span>
     <span id="alert-text"></span>
@@ -143,6 +148,7 @@
 
 <script src="assets/vendor/xlsx.full.min.js"></script>
 <script src="assets/seed-data.js"></script>
+<script src="assets/firebase-config.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>
