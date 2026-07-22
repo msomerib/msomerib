@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitor de ARTs</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <h1>Monitor de ARTs</h1>
+      <p class="subtitle">Acompanhamento de vencimentos e emiss&atilde;o de relat&oacute;rios</p>
+    </div>
+    <div class="topbar-actions">
+      <button id="btn-new" class="btn btn-primary">+ Nova ART</button>
+    </div>
+  </header>
+
+  <section id="alert-banner" class="alert-banner" hidden>
+    <span id="alert-icon" class="alert-icon">&#9888;</span>
+    <span id="alert-text"></span>
+    <button id="alert-dismiss" class="alert-dismiss" title="Fechar">&times;</button>
+  </section>
+
+  <section class="summary-cards">
+    <div class="card card-total">
+      <span class="card-value" id="stat-total">0</span>
+      <span class="card-label">Total de ARTs</span>
+    </div>
+    <div class="card card-ok">
+      <span class="card-value" id="stat-ok">0</span>
+      <span class="card-label">V&aacute;lidas</span>
+    </div>
+    <div class="card card-soon">
+      <span class="card-value" id="stat-soon">0</span>
+      <span class="card-label">Vencendo em at&eacute; 10 dias</span>
+    </div>
+    <div class="card card-expired">
+      <span class="card-value" id="stat-expired">0</span>
+      <span class="card-label">Vencidas</span>
+    </div>
+  </section>
+
+  <section class="toolbar">
+    <input id="search" type="search" placeholder="Buscar por nome, ART, CNPJ ou endere&ccedil;o...">
+    <select id="filter-status">
+      <option value="todos">Todos os status</option>
+      <option value="valido">V&aacute;lidas</option>
+      <option value="vence-em-breve">Vencendo em at&eacute; 10 dias</option>
+      <option value="vencido">Vencidas</option>
+    </select>
+    <div class="spacer"></div>
+    <button id="btn-import" class="btn btn-secondary">Importar planilha</button>
+    <input type="file" id="file-import" accept=".xlsx,.xls,.csv" hidden>
+    <button id="btn-export-xlsx" class="btn btn-secondary">Exportar Excel</button>
+    <button id="btn-print" class="btn btn-secondary">Gerar relat&oacute;rio (PDF)</button>
+  </section>
+
+  <section class="table-wrap">
+    <table id="arts-table">
+      <thead>
+        <tr>
+          <th data-sort="fim">Vencimento &#8597;</th>
+          <th data-sort="art">ART</th>
+          <th data-sort="nome">Cliente</th>
+          <th data-sort="cnpj">CNPJ</th>
+          <th>Endere&ccedil;o</th>
+          <th data-sort="valor">Valor</th>
+          <th>Status</th>
+          <th class="no-print">A&ccedil;&otilde;es</th>
+        </tr>
+      </thead>
+      <tbody id="arts-tbody"></tbody>
+    </table>
+    <p id="empty-state" class="empty-state" hidden>Nenhuma ART encontrada.</p>
+  </section>
+
+  <footer class="report-footer no-screen">
+    <p>Relat&oacute;rio gerado em <span id="report-date"></span> &mdash; Monitor de ARTs</p>
+  </footer>
+
+</div>
+
+<div id="modal-backdrop" class="modal-backdrop" hidden>
+  <div class="modal">
+    <h2 id="modal-title">Nova ART</h2>
+    <form id="art-form">
+      <input type="hidden" id="f-id">
+      <div class="form-grid">
+        <label>N&uacute;mero da ART
+          <input type="text" id="f-art" required>
+        </label>
+        <label>Situa&ccedil;&atilde;o de pagamento
+          <select id="f-pagamento">
+            <option value="PAGA">PAGA</option>
+            <option value="BOLETO">BOLETO</option>
+            <option value="PENDENTE">PENDENTE</option>
+          </select>
+        </label>
+        <label class="span-2">Cliente / Nome
+          <input type="text" id="f-nome" required>
+        </label>
+        <label class="span-2">Endere&ccedil;o
+          <input type="text" id="f-endereco">
+        </label>
+        <label class="span-2">Bairro / Cidade / CEP
+          <input type="text" id="f-bairro">
+        </label>
+        <label>CNPJ
+          <input type="text" id="f-cnpj">
+        </label>
+        <label>Valor (R$)
+          <input type="number" step="0.01" id="f-valor">
+        </label>
+        <label>In&iacute;cio de vig&ecirc;ncia
+          <input type="date" id="f-inicio" required>
+        </label>
+        <label>Fim de vig&ecirc;ncia (vencimento)
+          <input type="date" id="f-fim" required>
+        </label>
+        <label>Carga (BTU)
+          <input type="number" id="f-carga">
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="btn-cancel" class="btn btn-secondary">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="assets/vendor/xlsx.full.min.js"></script>
+<script src="assets/seed-data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
